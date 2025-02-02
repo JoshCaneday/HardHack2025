@@ -1,0 +1,38 @@
+import os
+import sys
+
+dll_path = os.path.join(os.path.dirname(__file__), "src")
+os.environ["PATH"] += os.pathsep + dll_path
+sys.path.append(dll_path)
+
+import serial
+import time
+from pylsl import StreamInlet, resolve_stream, StreamOutlet, StreamInfo
+import matplotlib.pyplot as plt
+import numpy as np
+
+#Inlet
+streams = resolve_stream('type', 'EEG')
+for stream in streams:
+    if stream.name() == "armEMG":
+        inlet = StreamInlet(stream)
+        break
+
+ser = serial.Serial('COM8', 9600)
+time.sleep(2)
+
+while True:
+    while True:
+        latest_sample, timestamp = inlet.pull_sample(timeout=0.0)
+        if latest_sample is None:
+            break  # Stop flushing when buffer is empty
+
+    sample, timestamp = inlet.pull_sample(timeout=1.0)
+    if sample:
+        ser.write(str(sample[0]).encode() + b'\n')
+        #print(f"Sent: {sample[0]}")
+
+        received = ser.readline().decode('utf-8', errors='ignore').strip()    # Read and decode
+        if received:
+            print(f"Arduino says: {received}")
+        
