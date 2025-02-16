@@ -18,7 +18,7 @@ for stream in streams:
         inlet = StreamInlet(stream)
         break
 
-ser = serial.Serial('COM8', 9600)
+ser = serial.Serial('COM3', 9600)
 time.sleep(2)
 
 while True:
@@ -31,8 +31,7 @@ while True:
     if sample:
         ser.write(str(sample[0]).encode() + b'\n')
         #print(f"Sent: {sample[0]}")
-
-        received = ser.readline().decode('utf-8', errors='ignore').strip()    # Read and decode
-        if received:
+        received = ser.readline().decode('utf-8', errors='ignore').strip()   # Read and decode
+        ser.flushInput()
+        if received != "waiting" and received != "Flexing" and received != "Relaxing":
             print(f"Arduino says: {received}")
-        
