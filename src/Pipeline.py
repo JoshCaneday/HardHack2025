@@ -18,20 +18,20 @@ for stream in streams:
         inlet = StreamInlet(stream)
         break
 
-ser = serial.Serial('COM3', 9600)
+ser = serial.Serial('COM10', 9600)
 time.sleep(2)
 
 while True:
     while True:
         latest_sample, timestamp = inlet.pull_sample(timeout=0.0)
         if latest_sample is None:
-            break  # Stop flushing when buffer is empty
+            break
 
     sample, timestamp = inlet.pull_sample(timeout=1.0)
     if sample:
         ser.write(str(sample[0]).encode() + b'\n')
-        #print(f"Sent: {sample[0]}")
-        received = ser.readline().decode('utf-8', errors='ignore').strip()   # Read and decode
-        ser.flushInput()
-        if received != "waiting" and received != "Flexing" and received != "Relaxing":
+        received = None
+        if ser.in_waiting > 0:
+            received = ser.readline().decode('utf-8', errors='ignore').strip()
+        if received:
             print(f"Arduino says: {received}")
